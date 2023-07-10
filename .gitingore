@@ -1,6 +1,5 @@
 .idea/*
 *.pyc
-db.sqlite3
 .DS_Store
 .enves
 staticfiles/

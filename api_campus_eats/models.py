@@ -1,3 +1,6 @@
+import datetime
+from sqlite3 import Date
+
 from django.contrib.auth.models import User
 from django.db import models
 import uuid
@@ -43,16 +46,20 @@ class DishExtra(models.Model):
 class CustomerOrder(models.Model):
     order_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    restaurant_id = models.ForeignKey(Restaurant, default=None, on_delete=models.CASCADE)
+    restaurant_id = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     order_type = models.CharField(max_length=10, choices=[('COLLECTION', 'collection')
         , ('DELIVER', 'deliver')], default='collection')
     order_status = models.CharField(max_length=20, choices=[
         ("SUBMITTED", "submitted"), ('COMPLETE', 'complete')],
-                                    default='complete')
+                                    default='submitted')
+    # total_amount = models.DecimalField(defau)
+
+    def __str__(self):
+        return 'Customer order '+str(self.order_id)[0:4]
 
 
 class OrderDetail(models.Model):
-    order = models.ForeignKey(CustomerOrder, primary_key=True, on_delete=models.CASCADE)
+    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)
     dish = models.ForeignKey(Dish, on_delete=models.DO_NOTHING)
     item_count = models.IntegerField(default=1)
-    dish_extra = models.ForeignKey(DishExtra, on_delete=models.DO_NOTHING)
+    # dish_extra = models.ForeignKey(DishExtra, on_delete=models.DO_NOTHING, null=True)
