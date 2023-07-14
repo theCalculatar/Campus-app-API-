@@ -52,10 +52,10 @@ class CustomerOrder(models.Model):
     order_status = models.CharField(max_length=20, choices=[
         ("SUBMITTED", "submitted"), ('COMPLETE', 'complete')],
                                     default='submitted')
-    # total_amount = models.DecimalField(defau)
+    # total_amount = models.DecimalField(decimal_places=2, default=0, max_digits=10)
 
     def __str__(self):
-        return 'Customer order '+str(self.order_id)[0:4]
+        return 'Customer order ' + str(self.order_id)[0:4]
 
 
 class OrderDetail(models.Model):

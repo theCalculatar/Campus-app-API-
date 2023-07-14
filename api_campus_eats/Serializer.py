@@ -97,7 +97,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerOrder
         fields = ('order_id', 'customer_id', 'order_type', 'restaurant_id',
-                  'order_status', 'order_items')
+                  'order_status', 'order_items',)
 
     def create(self, validated_data):
 
@@ -128,3 +128,10 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
                     if each_item['item_count'] <= 0 else each_item['item_count'])
 
         return order
+
+
+class CartOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerOrder
+        fields = ('order_id', 'customer_id', 'order_type', 'restaurant_id',
+                  'order_status', 'order_items',)

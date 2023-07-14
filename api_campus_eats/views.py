@@ -17,7 +17,10 @@ class Restaurants(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = Serializer.RestaurantSerializer(data=request.data)
+        serializer = Serializer.RestaurantSerializer(data=request.data,
+                                                     context={
+                                                         'request': request
+                                                     })
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -59,7 +62,7 @@ class DishView(APIView):
 
         serializer = Serializer.DishSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(pk=restaurant_id, extras=request.data.get("Extras"))
+            serializer.save(pk=restaurant_id, extras=request.data.get("extras"))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -96,22 +99,57 @@ class CreateRestaurantOrder(APIView):
 
     def get(self, request, restaurant_id):
         # request is used to check current loggen in user
-        order = CustomerOrder.objects.filter(customer_id=request.user.id)
-        serializer = Serializer.CustomerOrderSerializer(order, many=True, context={'request': request
-                                                                                   })
+        try:
+            Restaurant.objects.get(restaurant_id=restaurant_id)
+        except Restaurant.DoesNotExist:
+            raise Http404
+
+        order = CustomerOrder.objects.filter(customer_id=request.user.id,
+                                             restaurant_id=restaurant_id
+                                             )
+        serializer = Serializer.CustomerOrderSerializer(order,
+                                                        many=True,
+                                                        context={'request': request})
         return Response(serializer.data)
 
     def post(self, request, restaurant_id):
 
         try:
             Restaurant.objects.filter(restaurant_id=restaurant_id)
-        except Restaurant.doesNotExist:
+        except Restaurant.DoesNotExist:
             raise Http404
 
         serializer = Serializer.CustomerOrderSerializer(data=request.data,
                                                         context={'request': request,
-                                                                 'restaurant_id': restaurant_id})
+                                                                 'restaurant_id': restaurant_id}
+                                                        )
         if serializer.is_valid():
-            serializer.save(pk=restaurant_id, extras=request.data.get("Extras"))
+            serializer.save(order_items=request.data.get('order_items'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetCartOrder(APIView):
+    # def delete(self,):
+
+    # def post(self, request, order_id):
+    #     try:
+    #         order = CustomerOrder.objects.get(order_id=order_id,
+    #                                           customer_id=request.user.id)
+    #     except CustomerOrder.DoesNotExist:
+    #         raise Http404
+    #
+    #     serializer = Serializer.CustomerOrderSerializer(data=request.data)
+    #     return Response(serializer.data)
+
+    def get(self, request, order_id):
+
+        try:
+            queryset = CustomerOrder.objects.get(order_id=order_id,
+                                                 customer_id=request.user.id)
+        except CustomerOrder.DoesNotExist:
+            raise Http404
+        serializer = Serializer.CustomerOrderSerializer(queryset,
+                                                        context={'request': request})
+        return Response(serializer.data)
